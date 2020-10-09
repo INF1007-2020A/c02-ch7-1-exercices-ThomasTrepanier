@@ -43,22 +43,35 @@ def get_sorted_dict_by_decimals(dictValues): #Utiliser une fct lambda et sorted(
 	# 	originalKey = inverseDict[originalValue]
 	# 	sortedDict[originalKey] = originalValue
 
-def fibonacci_numbers(maxIndex):
-	index = 0
-	seq = [0, 1]
-	while (index < maxIndex):
-		yield(
-			0 if index == 0
-			else 1 if index == 1
-			else seq[0] + seq[1]
-		)
-		temp = seq[0]
-		seq[0] = seq[1]
-		seq[1] += temp
-		index += 1
+def fibonacci_numbers(length):
+	INIT_VALUES = [0, 1, 1]
+	seq = deque(INIT_VALUES)
+	#Retourner les 2 premiers éléments pas récursifs
+	for i in range(0, length):
+		if i >= length:
+			break
+		if i < len(INIT_VALUES):
+			yield INIT_VALUES[i]
+		else:
+			yield seq[-2] + seq[-1]
+			seq.append(seq[-2] + seq[-1])
+			seq.popleft()
 
-def build_recursive_sequence_generator(index):
-	pass
+def build_recursive_sequence_generator(INIT_VALUES, seqDef, keepInMemory = False):
+	seq = deque(INIT_VALUES)
+	i = 0
+	while True:
+		if i < len(INIT_VALUES):
+			yield INIT_VALUES[i]
+		else:
+			nextValue = seqDef(seq)
+			if keepInMemory:
+				seq.append(nextValue)
+			else:
+				seq.append(nextValue)
+				seq.popleft()
+			yield nextValue
+		i += 1
 
 
 if __name__ == "__main__":
@@ -101,13 +114,15 @@ if __name__ == "__main__":
 	def fibo_def(last_elems):
 		return last_elems[-1] + last_elems[-2]
 	fibo = build_recursive_sequence_generator([0, 1], fibo_def)
-	for fi in fibo(10):
-		print(fi, end=" ")
+	for i in range(0, 10):
+		print(next(fibo), end=" ")
 	print("\n")
 
-	lucas = build_recursive_sequence_generator(TODO)
-	print(f"Lucas : {[elem for elem in lucas(10)]}")
-	perrin = build_recursive_sequence_generator(TODO)
-	print(f"Perrin : {[elem for elem in perrin(10)]}")
-	hofstadter_q = build_recursive_sequence_generator(TODO)
-	print(f"Hofstadter-Q : {[elem for elem in hofstadter_q(10)]}")
+	lucas = build_recursive_sequence_generator([2, 1], lambda lastElems: lastElems[-1] + lastElems[-2])
+	print(f"Lucas : {[next(lucas) for i in range(0, 10)]}")
+
+	perrin = build_recursive_sequence_generator([3, 0, 2], lambda lastElems: lastElems[-2] + lastElems[-3])
+	print(f"Perrin : {[next(perrin) for i in range(0, 10)]}")
+
+	hofstadter_q = build_recursive_sequence_generator([1, 1], lambda lastElems: lastElems[-lastElems[-1]] + lastElems[-lastElems[-2]], keepInMemory=True)
+	print(f"Hofstadter-Q : {[next(hofstadter_q) for i in range(0, 10)]}")
